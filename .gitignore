@@ -1,0 +1,7 @@
+*.o
+*.dep
+tags
+cscope.in.out
+cscope.out
+cscope.po.out
+/notmuchfs

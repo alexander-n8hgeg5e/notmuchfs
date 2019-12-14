@@ -1,0 +1,46 @@
+#!/bin/fish
+#
+#Usage
+#
+#comma seperated tags. 
+#prepend '-' to remove tag.
+#to add tag no prepended '+' needed but would be no error.
+#################################################################################
+
+set ID (cat|formail -xMessage-id:|tr -d "<>"|tr -d ' ')
+
+echo id: $ID
+if test -z $ID
+  echo "Message-ID required"
+  exit 1
+end
+
+set tagstring (bash -c 'read -p "add tags: " -e  VAR < /dev/tty;echo $VAR')
+set TAGS_ (string split -- ' ' $tagstring)
+echo $TAGS_
+
+
+for i in $TAGS_
+  if test (string split -- '' $i)[1] = '-'
+    #remove tags
+    set TAGS $TAGS $i
+  else
+    if test (string split -- '' $i)[1] = '+'
+      #no additional '+' needed
+      set TAGS $TAGS $i
+    else
+      #need '+'
+      set TAGS $TAGS +$i
+    end
+  end
+  echo $TAGS
+end
+
+
+set cmdline "notmuch tag $TAGS id:$ID"
+echo "cmdline is: "$cmdline
+eval $cmdline
+if test $status -eq 0
+  echo success
+  exit 0
+end
