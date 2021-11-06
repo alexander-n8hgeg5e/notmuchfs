@@ -13,12 +13,12 @@ KEYWORDS="~amd64 ~x86"
 IUSE=""
 
 DEPEND="net-mail/notmuch
-        sys-fs/fuse
+		sys-fs/fuse:0
 "
 RDEPEND="${DEPEND}"
 
 src_install(){
-  dobin notmuchfs
-  dobin mutt/bin/notmuch_tag
-  dobin mutt/bin/prompt_mkdir
-  }
+	dobin notmuchfs
+	dobin mutt/bin/notmuch_tag
+	dobin mutt/bin/prompt_mkdir
+}
