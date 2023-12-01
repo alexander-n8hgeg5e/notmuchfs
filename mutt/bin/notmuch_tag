@@ -1,72 +1,46 @@
-#!/bin/bash
+#!/bin/fish
 #
-# Script to prompt the user for the tag string to use (e.g. '+tag1 -tag2'),
-# then apply it to the given message(s).
+#Usage
 #
-# Usage:
-#   Interactive:
-#     $ notmuch_tag
-#   Enter "?" to see a full tag list.
-#
-#   Pipe in Message-ID value(s), select tags interactively:
-#     $ echo id | notmuch_tag
-#
-#   All automatic:
-#     $ echo id | notmuch_tag +tag
-#
-# This file is part of notmuchfs.
-#
-# Notmuchfs is free software, released under the GNU General Public
-# License version 3 (or later).
-#
-# Copyright © 2012 Tim Stoakes
-################################################################################
+#comma seperated tags. 
+#prepend '-' to remove tag.
+#to add tag no prepended '+' needed but would be no error.
+#################################################################################
 
-# Tag string, if any.
-TAGS=$1
+set ID (cat|formail -xMessage-id:|tr -d "<>"|tr -d ' ')
 
-# Fetch the list of message IDs.
-while true; do
-  read -p "Message-ID: " ID
-  if [ -z "$ID"  ]; then
-    break
-  fi
-  IDS+=($ID)
-done
-
-if [ ${#IDS[*]} -eq 0 ]; then
+echo id: $ID
+if test -z $ID
   echo "Message-ID required"
-  exit 1;
-fi
+  exit 1
+end
 
-ID_ORED=$(printf "id:%s or " "${IDS[@]}")
-ID_ORED=${ID_ORED:0:${#ID_ORED}-4}
+set tagstring (bash -c 'read -p "add tags: " -e  VAR < /dev/tty;echo $VAR')
+set TAGS_ (string split -- ' ' $tagstring)
+echo $TAGS_
 
-if [ -z "$TAGS" ]; then
-  # Display the current tags of the given messages, but only if no tags were
-  # specified on the command line (which probably means we are
-  # non-interactive).
-  echo
-  echo "Current tags:"
-  notmuch search-tags $ID_ORED
-  echo
-fi
 
-while [ -z "$TAGS" ]; do
-  # Prompt for tag string. Hack /dev/tty for mutt.
-  read -p "Tags: " -e TAGS < /dev/tty
-  if [ -z "$TAGS" ]; then
-    exit
-  fi
+for i in $TAGS_
+  if test (string split -- '' $i)[1] = '-'
+    #remove tags
+    set TAGS $TAGS $i
+  else
+    if test (string split -- '' $i)[1] = '+'
+      #no additional '+' needed
+      set TAGS $TAGS $i
+    else
+      #need '+'
+      set TAGS $TAGS +$i
+    end
+  end
+  echo $TAGS
+end
 
-  if [ "$TAGS" == "?" ]; then
-    echo
-    echo "All tags:"
-    notmuch search-tags
-    echo
-    TAGS=
-  fi
-done
 
-notmuch tag $TAGS $ID_ORED
-exit $?
+set cmdline "notmuch tag $TAGS id:$ID"
+echo "cmdline is: "$cmdline
+eval $cmdline
+if test $status -eq 0
+  echo success
+  exit 0
+end
