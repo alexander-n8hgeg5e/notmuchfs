@@ -212,11 +212,14 @@ static void database_open (notmuch_context_t *p_ctx, bool need_write)
 
  while (TRUE) {
    notmuch_status_t status =
-     notmuch_database_open(global_config.mail_dir,
+     notmuch_database_open_with_config(global_config.mail_dir,
                            need_write ?
                              NOTMUCH_DATABASE_MODE_READ_WRITE:
                              NOTMUCH_DATABASE_MODE_READ_ONLY,
-                           &p_ctx->db);
+                             "",
+                             NULL,
+                           &p_ctx->db,
+                           NULL);
 
    if (status == NOTMUCH_STATUS_SUCCESS) {
      break;
