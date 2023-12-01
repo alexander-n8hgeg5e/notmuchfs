@@ -6,10 +6,9 @@
 #prepend '-' to remove tag.
 #to add tag no prepended '+' needed but would be no error.
 #################################################################################
+clear
+set ID (cat|sed -E -n  's/^\s*.*message-id:\s+[<](.*)[>].*$/\1/Ip')
 
-set ID (cat|formail -xMessage-id:|tr -d "<>"|tr -d ' ')
-
-echo id: $ID
 if test -z $ID
   echo "Message-ID required"
   exit 1
